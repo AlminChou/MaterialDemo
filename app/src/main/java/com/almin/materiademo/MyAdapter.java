@@ -28,6 +28,6 @@ public class MyAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        return String.format("Tab %d",position);
+        return String.format("Category %d",position);
     }
 }

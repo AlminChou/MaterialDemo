@@ -1,11 +1,20 @@
 package com.almin.materiademo;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.ActivityOptions;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
@@ -14,11 +23,15 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.transition.ArcMotion;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.view.animation.AnimationUtils;
+import android.view.animation.Interpolator;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -77,8 +90,9 @@ public class MainActivity extends AppCompatActivity
         });
 
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onClick(View view) {
                 Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -88,6 +102,12 @@ public class MainActivity extends AppCompatActivity
                                 Toast.makeText(MainActivity.this, "fab onClick...", Toast.LENGTH_LONG).show();
                             }
                         }).show();
+
+
+//                Intent intent = new Intent(MainActivity.this, CollapsingDemoActivity.class);
+//                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(MainActivity.this, fab,
+//                        getString(R.string.navigation_drawer_close));
+//                startActivityForResult(intent, 1, options.toBundle());
             }
         });
     }
@@ -134,7 +154,7 @@ public class MainActivity extends AppCompatActivity
         setSupportActionBar(mToolbar);
 
         mToolbar.setNavigationIcon(R.mipmap.ic_launcher);
-
+        mToolbar.inflateMenu(R.menu.main);//changed
         mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -248,4 +268,5 @@ public class MainActivity extends AppCompatActivity
     private void navigateToFragment(Fragment fragment){
 //        getSupportFragmentManager().beginTransaction().replace(R.id.container,fragment).addToBackStack(null).commit();
     }
+
 }

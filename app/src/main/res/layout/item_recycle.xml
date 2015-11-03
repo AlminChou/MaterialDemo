@@ -6,9 +6,11 @@
     android:layout_margin="12dip"
     android:paddingLeft="8dp"
     android:paddingRight="8dp"
-    android:paddingTop="8dp">
+    android:paddingTop="8dp"
+    >
 
     <RelativeLayout
+        android:background="?android:attr/selectableItemBackground"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
         <ImageView
@@ -36,14 +38,19 @@
                     android:layout_height="wrap_content"/>
             </android.support.design.widget.TextInputLayout>
 
-            <android.support.design.widget.TextInputLayout
-                android:id="@+id/til_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
-            </android.support.design.widget.TextInputLayout>
+            <SeekBar
+                android:id="@+id/seek_radius"
+                android:layout_marginTop="10dp"
+                android:layout_width="150dp"
+                android:layout_height="30dp"
+                />
+
+            <SeekBar
+                android:id="@+id/seek_shadow"
+                android:layout_marginTop="10dp"
+                android:layout_width="150dp"
+                android:layout_height="30dp"
+                />
 
         </LinearLayout>
 

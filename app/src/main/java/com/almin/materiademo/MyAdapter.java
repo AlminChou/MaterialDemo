@@ -18,7 +18,7 @@ public class MyAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        return new RecyclerViewDemoFragment();
+        return RecyclerViewDemoFragment.newInstance(position);
     }
 
     @Override

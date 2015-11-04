@@ -3,14 +3,16 @@ package com.almin.materiademo;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
+import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -19,46 +21,44 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 
 /**
  * Created by Almin on 2015/11/1.
  */
 public class RecyclerViewDemoFragment extends Fragment{
+    private static final int[] IMAGE_RES ={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.fi,R.drawable.g,R.drawable.s};
+    private static final String BUNDLE_KEY_POSITION = "pos";
     private RecyclerView mRecyclerView;
-    private SwipeRefreshLayout mSwipeRefreshLayout;
+
+    public static RecyclerViewDemoFragment newInstance(int position){
+        RecyclerViewDemoFragment fragment = new RecyclerViewDemoFragment();
+        Bundle arguments = new Bundle();
+        arguments.putInt(BUNDLE_KEY_POSITION, position);
+        fragment.setArguments(arguments);
+        return fragment;
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mSwipeRefreshLayout = (SwipeRefreshLayout) inflater.inflate(R.layout.fragment_recycle_demo, container, false);
-        mRecyclerView = (RecyclerView) mSwipeRefreshLayout.findViewById(R.id.recycler_view);
+        mRecyclerView = (RecyclerView) inflater.inflate(R.layout.fragment_recycle_demo, container, false);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mRecyclerView.getContext()));
-        final RecyclerViewAdapter adapter = new RecyclerViewAdapter(getActivity());
+        final RecyclerViewAdapter adapter = new RecyclerViewAdapter(getActivity(), getArguments().getInt(BUNDLE_KEY_POSITION));
         mRecyclerView.setAdapter(adapter);
-        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        adapter.add();
-                        adapter.notifyDataSetChanged();
-                        mSwipeRefreshLayout.setRefreshing(false);
-                        Snackbar.make(mRecyclerView,"refresh finished",Snackbar.LENGTH_LONG).show();
-                    }
-                },1500);
-            }
-        });
-        return mSwipeRefreshLayout;
+        return mRecyclerView;
     }
 
 
     private static class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder>{
         private Context mContext;
-        private int mCount = 2;
+        private int mCount = 8;
+        private int mPos;
 
-        public RecyclerViewAdapter(Context mContext) {
+        public RecyclerViewAdapter(Context mContext,int pos) {
             this.mContext = mContext;
+            mPos = pos;
         }
 
         @Override
@@ -69,6 +69,7 @@ public class RecyclerViewDemoFragment extends Fragment{
 
         @Override
         public void onBindViewHolder(final RecyclerViewAdapter.ViewHolder holder, int position) {
+            holder.mImageView.setBackgroundResource(IMAGE_RES[mPos]);
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -142,23 +143,20 @@ public class RecyclerViewDemoFragment extends Fragment{
             return mCount;
         }
 
-        public void add(){
-            mCount++;
-        }
-
         public static class ViewHolder extends RecyclerView.ViewHolder {
             public CardView mView;
+            private ImageView mImageView;
             public TextInputLayout mTilUsername;
             public SeekBar mSbCornerRadius,mSbShadow;
             public ViewHolder(CardView view) {
                 super(view);
                 mView = view;
+                mImageView = (ImageView) view.findViewById(R.id.imageView);
                 mTilUsername = (TextInputLayout) view.findViewById(R.id.til_username);
                 mSbCornerRadius = (SeekBar) view.findViewById(R.id.seek_radius);
                 mSbShadow = (SeekBar) view.findViewById(R.id.seek_shadow);
             }
         }
     }
-
 
 }

@@ -1,38 +1,33 @@
 package com.almin.materiademo;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.ActivityOptions;
-import android.content.Intent;
-import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.os.Handler;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
-import android.transition.ArcMotion;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.view.animation.AnimationUtils;
-import android.view.animation.Interpolator;
-import android.widget.TextView;
+import android.view.Window;
 import android.widget.Toast;
 
 /**
@@ -40,11 +35,15 @@ import android.widget.Toast;
  */
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener ,AppBarLayout.OnOffsetChangedListener{
     private DrawerLayout mDrawerLayout;
     private Toolbar mToolbar;
     private ActionBarDrawerToggle mToggle;
-
+    private TabLayout mTabLayout;
+    private SwipeRefreshLayout mSwipeRefreshLayout;
+    private AppBarLayout mAppBarLayout;
+    private FloatingActionButton mFab;
+    private static final int[] IMAGE_RES ={R.drawable.a,R.drawable.b,R.drawable.c,R.drawable.d,R.drawable.e,R.drawable.fi,R.drawable.g,R.drawable.s};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +51,61 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         initToolbar();
         initDrawer();
+        initTabLayout();
+        initFabButton();
+        mAppBarLayout = (AppBarLayout) findViewById(R.id.appbar_layout);
+        mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mSwipeRefreshLayout.setRefreshing(false);
+                        Snackbar.make(mSwipeRefreshLayout, "refresh finished", Snackbar.LENGTH_LONG).show();
+                    }
+                }, 1500);
+            }
+        });
+        mAppBarLayout.addOnOffsetChangedListener(this);
+    }
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+    private void initFabButton() {
+        mFab = (FloatingActionButton) findViewById(R.id.fab);
+        mFab.setOnClickListener(new View.OnClickListener() {
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public void onClick(View view) {
+//                               Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", new View.OnClickListener() {
+//                            @Override
+//                            public void onClick(View view) {
+//                                Toast.makeText(MainActivity.this, "fab onClick...", Toast.LENGTH_LONG).show();
+//                            }
+//                        }).show();
+
+                ViewCompat.animate(mFab)
+                        .scaleX(20)
+                        .scaleY(20)
+                        .setInterpolator(new FastOutSlowInInterpolator())
+                        .withEndAction(new Runnable() {
+                            @Override
+                            public void run() {
+                                mFab.hide();
+                            }
+                        })
+                        .start();
+
+//                Intent intent = new Intent(MainActivity.this, CollapsingDemoActivity.class);
+//                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(MainActivity.this, fab,
+//                        getString(R.string.navigation_drawer_close));
+//                startActivityForResult(intent, 1, options.toBundle());
+            }
+        });
+    }
+
+    private void initTabLayout() {
+        mTabLayout = (TabLayout) findViewById(R.id.tabs);
 //        tabLayout.addTab(tabLayout.newTab().setIcon(R.drawable.psb));
 //        tabLayout.addTab(tabLayout.newTab().setCustomView(R.layout.tab));
 //        tabLayout.addTab(tabLayout.newTab().setCustomView(R.layout.tab2));
@@ -63,53 +115,49 @@ public class MainActivity extends AppCompatActivity
         ViewPager viewPager = (ViewPager) findViewById(R.id.viewpager);
         MyAdapter adapter = new MyAdapter(getSupportFragmentManager(), 6);
         viewPager.setAdapter(adapter);
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.setTabsFromPagerAdapter(adapter);
-        tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
+        mTabLayout.setupWithViewPager(viewPager);
+        mTabLayout.setTabsFromPagerAdapter(adapter);
+        mTabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
 //        tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 //        tabLayout.getTabAt(0).setText("tab1");
 //        tabLayout.getTabAt(1).setText("tab2");
 //        tabLayout.getTabAt(2).setText("tab3");
 //        tabLayout.getTabAt(3).setText("tab4");
 
-        tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                System.out.println("*-- onTabSelected   "+tab.getText().toString());
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+            @SuppressLint("NewApi")
+            @Override
+            public void onPageSelected(int position) {
+                   updatePattle(position);
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-                System.out.println("*-- onTabUnselected   "+tab.getText().toString());
-            }
-
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-                System.out.println("*-- onTabReselected   "+tab.getText().toString());
-            }
-        });
-
-
-        final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                Toast.makeText(MainActivity.this, "fab onClick...", Toast.LENGTH_LONG).show();
-                            }
-                        }).show();
-
-
-//                Intent intent = new Intent(MainActivity.this, CollapsingDemoActivity.class);
-//                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(MainActivity.this, fab,
-//                        getString(R.string.navigation_drawer_close));
-//                startActivityForResult(intent, 1, options.toBundle());
+            public void onPageScrollStateChanged(int state) {
+                mSwipeRefreshLayout.setEnabled(state==0);
             }
         });
+//        mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+//            @Override
+//            public void onTabSelected(TabLayout.Tab tab) {
+//                System.out.println("*-- onTabSelected   "+tab.getText().toString());
+//            }
+//
+//            @Override
+//            public void onTabUnselected(TabLayout.Tab tab) {
+//                System.out.println("*-- onTabUnselected   "+tab.getText().toString());
+//            }
+//
+//            @Override
+//            public void onTabReselected(TabLayout.Tab tab) {
+//                System.out.println("*-- onTabReselected   "+tab.getText().toString());
+//            }
+//        });
+
     }
 
     private void initDrawer() {
@@ -226,17 +274,16 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.nav_camara) {
-            navigateToFragment(TempFragment.newInstance("import"));
+
         } else if (id == R.id.nav_gallery) {
-            navigateToFragment(TempFragment.newInstance("gallery"));
+
         } else if (id == R.id.nav_slideshow) {
-            navigateToFragment(TempFragment.newInstance("slideshow"));
+
         } else if (id == R.id.nav_manage) {
-            navigateToFragment(TempFragment.newInstance("manage"));
+
         } else if (id == R.id.nav_share) {
-            navigateToFragment(TempFragment.newInstance("share"));
+
         } else if (id == R.id.nav_send) {
-            navigateToFragment(TempFragment.newInstance("send"));
         }
         item.setChecked(true);
         mDrawerLayout.closeDrawer(GravityCompat.START);
@@ -244,29 +291,35 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-
-    public static class TempFragment extends Fragment{
-        private static final String BUNDLE_KEY = "string_key";
-
-        public static TempFragment newInstance(String itemName){
-            TempFragment tempFragment = new TempFragment();
-            Bundle arguments = new Bundle();
-            arguments.putString(BUNDLE_KEY, itemName);
-            tempFragment.setArguments(arguments);
-            return  tempFragment;
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_temp,container,false);
-            ((TextView)rootView.findViewById(R.id.tv_label)).setText(getArguments().getString(BUNDLE_KEY));
-            return rootView;
-        }
+    @Override
+    public void onOffsetChanged(AppBarLayout appBarLayout, int i) {
+        mSwipeRefreshLayout.setEnabled(i==0);
     }
 
-
-    private void navigateToFragment(Fragment fragment){
-//        getSupportFragmentManager().beginTransaction().replace(R.id.container,fragment).addToBackStack(null).commit();
+    private void updatePattle(int position) {
+        Bitmap bitmap = BitmapFactory.decodeResource(getResources(),
+                IMAGE_RES[position]);
+        Palette.generateAsync(bitmap, new Palette.PaletteAsyncListener() {
+            @Override
+            public void onGenerated(Palette palette) {
+//                Palette.Swatch vibrant = palette.getVibrantSwatch();
+//                Palette.Swatch vibrant = palette.getDarkVibrantSwatch();
+//                Palette.Swatch vibrant = palette.getLightVibrantSwatch();
+//                Palette.Swatch vibrant = palette.getLightMutedSwatch();
+                Palette.Swatch vibrant = palette.getMutedSwatch();
+//                Palette.Swatch vibrant = palette.getDarkMutedSwatch();
+                if(vibrant!=null){
+                    mTabLayout.setBackgroundColor(vibrant.getRgb());
+                    mFab.setRippleColor(vibrant.getRgb());
+                    mToolbar.setBackgroundColor(vibrant.getRgb());
+                    if (android.os.Build.VERSION.SDK_INT >= 21) {
+                        Window window = getWindow();
+                        window.setStatusBarColor(vibrant.getRgb());
+                        window.setNavigationBarColor(vibrant.getRgb());
+                    }
+                }
+            }
+        });
     }
 
 }
